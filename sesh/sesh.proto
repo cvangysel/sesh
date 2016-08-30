@@ -1,0 +1,143 @@
+syntax = "proto3";
+
+package sesh;
+
+enum AggregationType {
+    NONE = 0;
+    UNIFORM = 1;
+    EXPONENTIAL = 2;
+    LEARNED = 3;
+}
+
+enum BeliefType {
+    AND = 0;  // QCM.
+    OR = 1;
+}
+
+//
+// Scorer descriptor.
+//
+
+message ScorerDesc {
+    string type = 1;
+    string identifier = 2;
+
+    RNNScorerDesc rnn_scorer_desc = 3;
+    IndriScorerDesc indri_scorer_desc = 4;
+    QCMScorerDesc qcm_scorer_desc = 5;
+    NuggetScorerDesc nugget_scorer_desc = 6;
+    TermWeightingOracleScorerDesc term_reweighting_oracle_scorer_desc = 7;
+};
+
+message RNNScorerDesc {
+    string meta_path = 1;
+    string model_path = 2;
+};
+
+message IndriScorerDesc {
+    enum QueryPosition {
+        LAST = 0;
+        FIRST = 1;
+        ALL = 2;
+        THEME = 3;
+        CUSTOM = 4;
+    }
+
+    QueryPosition query_position = 1;
+
+    // Only used if query_position == CUSTOM.
+    string weights_path = 2;
+
+    // If true and query_position is LAST, FIRST or ALL, then use
+    // the tokenized version instead of the raw query.
+    bool cleaned = 3;
+
+    // If true and cleaned is true, then use
+    // the boolean counts.
+    bool binary = 4;
+};
+
+message QCMScorerDesc {
+    BeliefType belief_type = 1;
+
+    message Params {
+        float alpha = 1;
+        float beta = 2;
+        float epsilon = 3;
+        float delta = 4;
+
+        float gamma = 5;
+    }
+
+    Params params = 2;
+};
+
+message NuggetScorerDesc {
+    enum ReadingLevel {
+        RL1 = 0;
+        RL2 = 1;
+        RL3 = 2;
+        RL4 = 3;
+    }
+
+    ReadingLevel reading_level = 1;
+};
+
+message TermWeightingOracleScorerDesc {
+    enum ApproximationMethod {
+        NONE = 0;
+        RANKSVM = 1;
+        BRUTE = 2;
+    }
+
+    ApproximationMethod approximation_method = 1;
+};
+
+//
+// Session modifier.
+//
+
+message SessionModifier {
+    string identifier = 1;
+
+    // Filters.
+    int32 min_session_length = 2;  // inclusive
+    int32 max_session_length = 3;  // inclusive
+
+    int32 max_session_unique_query_terms = 6; // inclusive
+
+    // Modifiers.
+
+    // If set, crops the session by throwing away the specified number of interactions at the end.
+    int32 session_cutoff = 4;
+
+    // If set, only retains the specified context in the session (where 1 means only retain the last interaction).
+    int32 session_context_length = 5;
+};
+
+//
+// Configuration for score_sessions.py.
+//
+
+message ScoreSessionsConfig {
+    repeated SessionModifier modifier = 1;
+
+    repeated ScorerDesc scorer = 2;
+
+    enum CandidateGenerator {
+        NONE = 0;
+        LEMUR = 1;
+        QREL = 2;
+        DOCUMENT_LIST = 3;
+    }
+
+    CandidateGenerator candidate_generator = 3;
+
+    // Only used when candidate_generator equals LEMUR.
+    int32 top_candidate_limit = 4;
+
+    // Only used when candidate_generator equals DOCUMENT_LIST.
+    string document_list = 5;
+
+    bool retain_non_candidate_documents = 6;
+}

@@ -1,0 +1,10 @@
+beautifulsoup4==4.5.1
+gensim==0.13.1
+lxml==3.6.4
+nltk==3.2.1
+matplotlib==1.5.2
+numpy==1.11.1
+protobuf==3.0.0
+pysofia==0.8
+scipy==0.18.0
+sklearn==0.0
