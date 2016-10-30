@@ -191,7 +191,7 @@ class IndriScorer(SessionScorer):
             if self.desc.indri_scorer_desc.binary:
                 terms = list(set(terms))
 
-            query = session.interactions[query_idx].original_query
+            query = ' '.join(terms)
         elif self.desc.indri_scorer_desc.query_position == \
                 sesh_pb2.IndriScorerDesc.ALL:
             if self.desc.indri_scorer_desc.cleaned:
